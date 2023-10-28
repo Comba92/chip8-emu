@@ -1,0 +1,17 @@
+{
+  "name": "chip8-emu",
+  "version": "1.0.0",
+  "description": "A Chip8 basic Javascript emulator.",
+  "main": "main.js",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.2",
+    "vite": "^4.4.5"
+  },
+  "author": "",
+  "license": "ISC"
+}
