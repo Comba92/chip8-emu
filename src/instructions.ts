@@ -136,8 +136,11 @@ export const instructionSet: Instruction[] = [
     mask: 0xf00f, pattern: 0x8004,
     args: [operandTypes.x, operandTypes.y],
     command: (cpu, args) => {
-      cpu.reg[0xf] = (cpu.reg[args[0]] + cpu.reg[args[1]] > 255) ? 1 : 0
-      cpu.reg[args[0]] += cpu.reg[args[1]]
+      const vx = cpu.reg[args[0]]
+      const vy = cpu.reg[args[1]]
+
+      cpu.reg[args[0]] += vy
+      cpu.reg[0xf] = (vx + vy > 255) ? 1 : 0
     }
   },
   {
@@ -146,8 +149,11 @@ export const instructionSet: Instruction[] = [
     mask: 0xf00f, pattern: 0x8005,
     args: [operandTypes.x, operandTypes.y],
     command: (cpu, args) => {
-      cpu.reg[0xf] = (cpu.reg[args[0]] > cpu.reg[args[1]]) ? 1 : 0
-      cpu.reg[args[0]] -= cpu.reg[args[1]]
+      const vx = cpu.reg[args[0]]
+      const vy = cpu.reg[args[1]]
+
+      cpu.reg[args[0]] -= vy
+      cpu.reg[0xf] = (vx > vy) ? 1 : 0
     }
   },
   {
@@ -156,8 +162,11 @@ export const instructionSet: Instruction[] = [
     mask: 0xf00f, pattern: 0x8006,
     args: [operandTypes.x, operandTypes.y],
     command: (cpu, args) => {
-      cpu.reg[0xf] = ((cpu.reg[args[0]] & 0x000f) === 1) ? 1 : 0
-      cpu.reg[args[0]] = cpu.reg[args[0]] >> 1
+      const vx = cpu.reg[args[0]]
+      const vy = cpu.reg[args[1]]
+      
+      cpu.reg[args[0]] = vx >> 1
+      cpu.reg[0xf] = vx & 0x0001
     }
   },
   {
@@ -166,8 +175,11 @@ export const instructionSet: Instruction[] = [
     mask: 0xf00f, pattern: 0x8007,
     args: [operandTypes.x, operandTypes.y],
     command: (cpu, args) => {
-      cpu.reg[0xf] = (cpu.reg[args[1]] > cpu.reg[args[0]]) ? 1 : 0
-      cpu.reg[args[0]] = cpu.reg[args[1]] - cpu.reg[args[0]]
+      const vx = cpu.reg[args[0]]
+      const vy = cpu.reg[args[1]]
+
+      cpu.reg[args[0]] = vy - vx
+      cpu.reg[0xf] = (vy > vx) ? 1 : 0
     }
   },
   {
@@ -176,8 +188,11 @@ export const instructionSet: Instruction[] = [
     mask: 0xf00f, pattern: 0x800e,
     args: [operandTypes.x, operandTypes.y],
     command: (cpu, args) => {
-      cpu.reg[0xf] = ((cpu.reg[args[0]] & 0xf000) === 1) ? 1 : 0
-      cpu.reg[args[0]] = cpu.reg[args[0]] << 1
+      const vx = cpu.reg[args[0]]
+      const vy = cpu.reg[args[1]]
+
+      cpu.reg[args[0]] = vx << 1
+      cpu.reg[0xf] = (vx >> 7) & 0x0001
     }
   },
   {
@@ -326,7 +341,7 @@ export const instructionSet: Instruction[] = [
     mask: 0xf0ff, pattern: 0xf055,
     args: [operandTypes.x],
     command: (cpu, args) => {
-      for(let i=0; i<args[0]; i++) cpu.ram[cpu.IR + i] = cpu.reg[i]
+      for(let i=0; i<=args[0]; i++) cpu.ram[cpu.IR + i] = cpu.reg[i]
     }
   },
   {
@@ -335,7 +350,7 @@ export const instructionSet: Instruction[] = [
     mask: 0xf0ff, pattern: 0xf065,
     args: [operandTypes.x], 
     command: (cpu, args) => {
-      for (let i = 0; i < args[0]; i++) cpu.reg[i] = cpu.ram[cpu.IR + i]
+      for (let i = 0; i<=args[0]; i++) cpu.reg[i] = cpu.ram[cpu.IR + i]
     }
   }
 ]
