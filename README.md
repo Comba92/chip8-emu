@@ -32,8 +32,8 @@ Various resources I used.
 [Chip8 timers clock](https://www.reddit.com/r/EmuDev/comments/7v7flo/duncetier_chip8_question_how_do_i_set_the_timers/)
 
 ## Possible Updates
-[] - Memory and Registers dump
-[] - Roms picker
+[] - Memory and Registers real-time dump
+[] - Roms list picker
 [] - Dynamically change CPU clock
 [] - Settable keys
 [] - Better page visuals
