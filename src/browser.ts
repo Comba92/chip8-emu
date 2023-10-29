@@ -1,7 +1,6 @@
-import Chip8, { DISPLAY_HEIGHT, DISPLAY_WIDTH, TIMERS_CLOCK } from './emulator';
+import Chip8, { CPU_CLOCK, DISPLAY_HEIGHT, DISPLAY_WIDTH, TIMERS_CLOCK } from './emulator';
 
 const DEFAULT_SCALE = 10
-const STEPS_PER_FRAME = 5
 /*
   Keys order layout is:
   1 2 3 C     
@@ -19,7 +18,8 @@ export default class BrowserIO {
   canvas: CanvasRenderingContext2D
   scaling: number;
   frameID: number | null = null
-  timerDelay: number = 0;
+  cpuDelay: number = 0
+  timerDelay: number = 0
   sounds: OscillatorNode[] = []
 
   constructor(emu: Chip8) {
@@ -53,6 +53,7 @@ export default class BrowserIO {
   loop(previousFrameTime: DOMHighResTimeStamp) {
     const currentFrameTime = performance.now()
     const dt = currentFrameTime - previousFrameTime
+
     this.timerDelay += dt
     if (this.timerDelay >= 1000 / TIMERS_CLOCK) {
       this.timerDelay -= 1000 / TIMERS_CLOCK
@@ -60,8 +61,12 @@ export default class BrowserIO {
       if (this.emu.ST === 1) this.beep()
     }
 
-    for (let i=0; i<STEPS_PER_FRAME; i++) this.emu.step()
-    this.draw()
+    this.cpuDelay += dt
+    if (this.cpuDelay >= 1000 / CPU_CLOCK) {
+      this.cpuDelay -= 1000 / CPU_CLOCK
+      this.emu.step()
+      this.draw()
+    }
 
     this.frameID = window.requestAnimationFrame(() => this.loop(currentFrameTime))
   }

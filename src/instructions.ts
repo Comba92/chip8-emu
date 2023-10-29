@@ -258,14 +258,14 @@ export const instructionSet: Instruction[] = [
     description: 'SKP Vx',
     mask: 0xf0ff, pattern: 0xe09e,
     args: [operandTypes.x],
-    command: (cpu, args) => cpu.PC += ( cpu.keys[ cpu.reg[args[0]] ] ) ? 2 : 0
+    command: (cpu, args) => cpu.PC += ( cpu.keys[ cpu.reg[args[0]] ] > 0 ) ? 2 : 0
   },
   {
     name: 'ExA1',
     description: 'SKNP Vx',
     mask: 0xf0ff, pattern: 0xe0a1,
     args: [operandTypes.x],
-    command: (cpu, args) => cpu.PC += ( !cpu.keys[ cpu.reg[args[0]] ] ) ? 2 : 0
+    command: (cpu, args) => cpu.PC += ( cpu.keys[ cpu.reg[args[0]] ] === 0) ? 2 : 0
   },
   {
     name: 'Fx07',
@@ -281,16 +281,22 @@ export const instructionSet: Instruction[] = [
     mask: 0xf0ff, pattern: 0xf00a,
     args: [operandTypes.x],
     command: (cpu, args) => {
-      let pressed = false
+      if (cpu.specialKey !== -1
+        && cpu.keys[cpu.specialKey] === 0
+      ) {
+        cpu.reg[args[0]] = cpu.specialKey
+        cpu.specialKey = -1
+        return
+      }
+
       for (let i = 0; i<NUM_KEYS; i++) {
         if (cpu.keys[i] === 1) {
-          cpu.reg[args[0]] = i
-          pressed = true
+          cpu.specialKey = i
           break
         }
       }
 
-      if (!pressed) cpu.PC -= 2 
+      cpu.PC -= 2 
     }
   },
   {

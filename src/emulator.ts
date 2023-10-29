@@ -21,6 +21,7 @@ export const DISPLAY_WIDTH = 64
 export const DISPLAY_HEIGHT = 32
 export const NUM_KEYS = 16
 export const START_ADDRESS = 0x200
+export const CPU_CLOCK = 700
 export const TIMERS_CLOCK = 60
 
 export default class Chip8 {
@@ -30,6 +31,7 @@ export default class Chip8 {
 
   display: Uint8Array;    // Framebuffer
   keys: Uint8Array;
+  specialKey: number = -1
 
   PC: number;             // 16bit Program counter
   IR: number = 0;         // 16 bit I register
