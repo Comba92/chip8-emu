@@ -2,22 +2,26 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Vite + TS</title>
+    <title>Chip8 Emulator</title>
   </head>
   <body>
     <div id="app">
       <canvas></canvas>
     </div>
-    <label for="upload">Upload a rom:</label>
-    <input type="file" id="upload" accept=".ch8">
-    
-    <label for="roms">Pick a rom:</label>
-      <select id="roms">
-        <option value="">TODO 1</option>
-        <option value="">TODO 2</option>
+    <div>
+      <label for="upload">Upload a rom:</label>
+      <input type="file" id="upload" accept=".ch8">
+      <button id="reset">Reset ROM</button>
+      <button id="pause">Pause ROM</button>
+    </div>
+    <div>
+      <p id="loading"></p>
+      <label hidden for="roms">Pick a rom:</label>
+      <select hidden id="roms">
+        <option value="">TODO</option>
       </select>
+    </div>
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>

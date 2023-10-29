@@ -22,11 +22,6 @@ export const DISPLAY_HEIGHT = 32
 export const NUM_KEYS = 16
 export const START_ADDRESS = 0x200
 
-export interface IOInterface {
-  render(framebuffer: Uint8Array): void,
-  handleInput?(keys: Uint8Array): void,
-}
-
 export default class Chip8 {
   ram: Uint8Array;        // 4K RAM
   reg: Uint8Array;        // 16 8bit registers
@@ -42,9 +37,7 @@ export default class Chip8 {
   DT: number = 0;         // Delay Timer
   ST: number = 0;         // Sound Timer
 
-  interface: IOInterface;
-
-  constructor(io: IOInterface) {
+  constructor() {
     this.ram = new Uint8Array(RAM_SIZE)
     this.stack = new Uint16Array(STACK_SIZE)
     this.reg = new Uint8Array(NUM_REGISTERS)
@@ -53,8 +46,6 @@ export default class Chip8 {
     this.keys = new Uint8Array(NUM_KEYS)
 
     this.PC = START_ADDRESS
-    this.loadFonts()
-    this.interface = io
   }
 
   loadFonts() {
@@ -62,8 +53,12 @@ export default class Chip8 {
   }
 
   loadRom(data: Uint8Array) {
-    this.reset()
     for (let i = 0; i < data.length; i++) this.ram[START_ADDRESS + i] = data[i]
+  }
+
+  loadRomAndReset(data: Uint8Array) {
+    this.reset()
+    this.loadRom(data)
   }
 
   reset() {
@@ -85,19 +80,8 @@ export default class Chip8 {
     this.PC += 2
 
     const {inst, args} = this.decode(op)
+    // console.log(inst, args)
     this.execute(inst, args)
-    
-    this.interface.render(this.display)
-  }
-
-  run() {
-    try {
-      while (true) {
-        this.step()
-      }
-    } catch (e) {
-      console.log("Execution finished.")
-    }
   }
 
   tick() {
@@ -107,7 +91,6 @@ export default class Chip8 {
 
   fetch() {
     if (this.PC > RAM_SIZE) {
-      this.debug()
       throw new Error('PC out of memory!')
     }
 
@@ -126,7 +109,6 @@ export default class Chip8 {
     // Finds what the current instruction is
     const inst = instructionSet.find(i => (opcode & i.mask) === i.pattern)
     if (!inst || inst.name === '0nnn') {
-      this.debug()
       throw new Error('Instruction not valid!')
     }
 
@@ -143,7 +125,9 @@ export default class Chip8 {
   debug() {
     console.log('Registers: ', this.reg)
     console.log('PC: ', this.PC)
+    console.log('I: ', this.IR)
     console.log('RAM: ', this.ram)
     console.log('Framebuffer: ', this.display)
+    console.log('Keys: ', this.keys)
   }
 }

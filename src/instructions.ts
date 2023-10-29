@@ -275,6 +275,7 @@ export const instructionSet: Instruction[] = [
     command: (cpu, args) => cpu.reg[args[0]] = cpu.DT
   },
   {
+    // FIXME: this restarts execution AFTER the key is released. Timers needed
     name: 'Fx0A',
     description: 'LD Vx, K',
     mask: 0xf0ff, pattern: 0xf00a,
@@ -282,7 +283,7 @@ export const instructionSet: Instruction[] = [
     command: (cpu, args) => {
       let pressed = false
       for (let i = 0; i<NUM_KEYS; i++) {
-        if (cpu.keys[i]) {
+        if (cpu.keys[i] === 1) {
           cpu.reg[args[0]] = i
           pressed = true
           break
