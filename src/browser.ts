@@ -1,9 +1,7 @@
-import Chip8, { DISPLAY_HEIGHT, DISPLAY_WIDTH } from './emulator';
-
-export interface IOInterface {}
+import Chip8, { DISPLAY_HEIGHT, DISPLAY_WIDTH, TIMERS_CLOCK } from './emulator';
 
 const DEFAULT_SCALE = 10
-const STEPS_PER_FRAME = 10
+const STEPS_PER_FRAME = 5
 /*
   Keys order layout is:
   1 2 3 C     
@@ -15,62 +13,86 @@ const STEPS_PER_FRAME = 10
 const KEYS = ['x', '1', '2', '3', 'q', 'w', 'e', 'a', 's', 'd', 'z', 'c', '4', 'r', 'f', 'v']
 
 
-export default class IOBrowser implements IOInterface {
+export default class BrowserIO {
   emu: Chip8
   rom: Uint8Array | null = null
-  ctx: CanvasRenderingContext2D
+  canvas: CanvasRenderingContext2D
   scaling: number;
-  running: boolean = true;
-  timerID: number | null = null
+  frameID: number | null = null
+  timerDelay: number = 0;
+  sounds: OscillatorNode[] = []
 
   constructor(emu: Chip8) {
     this.emu = emu    
     this.scaling = DEFAULT_SCALE
-    this.ctx = this.initCanvas()
+    this.canvas = this.initCanvas()
     this.initRomManager()
     this.initKeyboard()
-    this.initUI()
+    this.initDOM()
   }
 
   draw() {
     for (let y=0; y<DISPLAY_HEIGHT; y++) {
       for (let x=0; x<DISPLAY_WIDTH; x++) {
         if (this.emu.display[y * DISPLAY_WIDTH + x] === 1) {
-          this.ctx.fillStyle = 'black'
+          this.canvas.fillStyle = 'black'
         } else {
-          this.ctx.fillStyle = 'white'
+          this.canvas.fillStyle = 'white'
         }
 
-        this.ctx.fillRect(
+        this.canvas.fillRect(
           x * this.scaling, y * this.scaling,
           this.scaling, this.scaling
         )
       }
     }
 
-    this.ctx.strokeRect(0, 0, DISPLAY_WIDTH*this.scaling, DISPLAY_HEIGHT*this.scaling)
+    this.canvas.strokeRect(0, 0, DISPLAY_WIDTH*this.scaling, DISPLAY_HEIGHT*this.scaling)
   }
 
-  render() {
+  loop(previousFrameTime: DOMHighResTimeStamp) {
+    const currentFrameTime = performance.now()
+    const dt = currentFrameTime - previousFrameTime
+    this.timerDelay += dt
+    if (this.timerDelay >= 1000 / TIMERS_CLOCK) {
+      this.timerDelay -= 1000 / TIMERS_CLOCK
+      this.emu.tick()
+      if (this.emu.ST === 1) this.beep()
+    }
+
     for (let i=0; i<STEPS_PER_FRAME; i++) this.emu.step()
-    this.emu.tick()
     this.draw()
 
-    this.timerID = window.requestAnimationFrame(() => this.render())
+    this.frameID = window.requestAnimationFrame(() => this.loop(currentFrameTime))
   }
 
   start() {
-    if (!this.rom) return
-    this.timerID = window.requestAnimationFrame(() => this.render())
+    this.frameID = window.requestAnimationFrame(() => this.loop(0))
   }
 
   stop() {
-    window.cancelAnimationFrame(this.timerID!)
-    this.timerID = null
+    window.cancelAnimationFrame(this.frameID!)
+    this.frameID = null
+  }
+
+  beep() {
+    const audio = new AudioContext()
+    const oscillator = audio.createOscillator()
+    const gain = audio.createGain()
+    oscillator.type = 'triangle'
+    oscillator.frequency.value = 400;
+    gain.gain.value = 0.3
+    oscillator.connect(gain)
+    gain.connect(audio.destination)
+    oscillator.start();
+
+    setTimeout(function () {
+      oscillator.stop();
+    }, 250);
   }
 
   isRunning() {
-    return this.timerID !== null
+    return this.frameID !== null
   }
 
   initCanvas() {
@@ -95,10 +117,12 @@ export default class IOBrowser implements IOInterface {
     })
   }
 
-  initUI() {
+
+
+  initDOM() {
     const reset = document.getElementById('reset')
     reset?.addEventListener('click', () => {
-      if (this.rom) this.emu.loadRomAndReset(this.rom)
+      if (this.rom) this.emu.bootRom(this.rom)
     })
 
     const pause = document.getElementById('pause')
@@ -161,7 +185,7 @@ export default class IOBrowser implements IOInterface {
     loading.textContent = ''
 
     this.rom = rom
-    this.emu.loadRomAndReset(rom)
+    this.emu.bootRom(rom)
     this.start()
   }
 }

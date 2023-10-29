@@ -21,6 +21,7 @@ export const DISPLAY_WIDTH = 64
 export const DISPLAY_HEIGHT = 32
 export const NUM_KEYS = 16
 export const START_ADDRESS = 0x200
+export const TIMERS_CLOCK = 60
 
 export default class Chip8 {
   ram: Uint8Array;        // 4K RAM
@@ -34,6 +35,7 @@ export default class Chip8 {
   IR: number = 0;         // 16 bit I register
   SP: number = -1;        // 16 bit stack pointer
 
+  // They both count down at 60 Hz
   DT: number = 0;         // Delay Timer
   ST: number = 0;         // Sound Timer
 
@@ -56,7 +58,7 @@ export default class Chip8 {
     for (let i = 0; i < data.length; i++) this.ram[START_ADDRESS + i] = data[i]
   }
 
-  loadRomAndReset(data: Uint8Array) {
+  bootRom(data: Uint8Array) {
     this.reset()
     this.loadRom(data)
   }
@@ -80,7 +82,6 @@ export default class Chip8 {
     this.PC += 2
 
     const {inst, args} = this.decode(op)
-    // console.log(inst, args)
     this.execute(inst, args)
   }
 
