@@ -163,7 +163,7 @@ export const instructionSet: Instruction[] = [
     args: [operandTypes.x, operandTypes.y],
     command: (cpu, args) => {
       const vx = cpu.reg[args[0]]
-      const vy = cpu.reg[args[1]]
+      // const vy = cpu.reg[args[1]]
       
       cpu.reg[args[0]] = vx >> 1
       cpu.reg[0xf] = vx & 0x0001
@@ -189,7 +189,7 @@ export const instructionSet: Instruction[] = [
     args: [operandTypes.x, operandTypes.y],
     command: (cpu, args) => {
       const vx = cpu.reg[args[0]]
-      const vy = cpu.reg[args[1]]
+      // const vy = cpu.reg[args[1]]
 
       cpu.reg[args[0]] = vx << 1
       cpu.reg[0xf] = (vx >> 7) & 0x0001
@@ -275,7 +275,6 @@ export const instructionSet: Instruction[] = [
     command: (cpu, args) => cpu.reg[args[0]] = cpu.DT
   },
   {
-    // FIXME: this restarts execution AFTER the key is released. Timers needed
     name: 'Fx0A',
     description: 'LD Vx, K',
     mask: 0xf0ff, pattern: 0xf00a,

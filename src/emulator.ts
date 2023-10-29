@@ -30,7 +30,8 @@ export default class Chip8 {
   stack: Uint16Array;     // Stack has to store addresses, so 16bit
 
   display: Uint8Array;    // Framebuffer
-  keys: Uint8Array;
+  keys: Uint8Array;       // Array of currently held down keys
+  // This is needed for Fx0A
   specialKey: number = -1
 
   PC: number;             // 16bit Program counter

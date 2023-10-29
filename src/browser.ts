@@ -1,6 +1,7 @@
-import Chip8, { CPU_CLOCK, DISPLAY_HEIGHT, DISPLAY_WIDTH, TIMERS_CLOCK } from './emulator';
+import Chip8, { CPU_CLOCK, DISPLAY_HEIGHT, DISPLAY_WIDTH } from './emulator';
 
 const DEFAULT_SCALE = 10
+const STEPS_PER_FRAME = 5
 /*
   Keys order layout is:
   1 2 3 C     
@@ -50,29 +51,18 @@ export default class BrowserIO {
     this.canvas.strokeRect(0, 0, DISPLAY_WIDTH*this.scaling, DISPLAY_HEIGHT*this.scaling)
   }
 
-  loop(previousFrameTime: DOMHighResTimeStamp) {
-    const currentFrameTime = performance.now()
-    const dt = currentFrameTime - previousFrameTime
+  loop() {
+    for(let i=0; i<STEPS_PER_FRAME; i++) this.emu.step()
+    this.draw()
+    // We're running at 60fps on average, so the timers are mostly okay (at 60hz, so one tick per frame)
+    this.emu.tick()
+    if (this.emu.ST === 1) this.beep()
 
-    this.timerDelay += dt
-    if (this.timerDelay >= 1000 / TIMERS_CLOCK) {
-      this.timerDelay -= 1000 / TIMERS_CLOCK
-      this.emu.tick()
-      if (this.emu.ST === 1) this.beep()
-    }
-
-    this.cpuDelay += dt
-    if (this.cpuDelay >= 1000 / CPU_CLOCK) {
-      this.cpuDelay -= 1000 / CPU_CLOCK
-      this.emu.step()
-      this.draw()
-    }
-
-    this.frameID = window.requestAnimationFrame(() => this.loop(currentFrameTime))
+    this.frameID = window.requestAnimationFrame(() => this.loop())
   }
 
   start() {
-    this.frameID = window.requestAnimationFrame(() => this.loop(0))
+    this.frameID = window.requestAnimationFrame(() => this.loop())
   }
 
   stop() {
@@ -123,15 +113,18 @@ export default class BrowserIO {
   }
 
 
-
   initDOM() {
-    const reset = document.getElementById('reset')
-    reset?.addEventListener('click', () => {
+    const reset = document.getElementById('reset')!
+    const pause = document.getElementById('pause')!
+    reset.addEventListener('click', () => {
       if (this.rom) this.emu.bootRom(this.rom)
+      if (!this.isRunning()) {
+        pause.textContent = 'Pause ROM'
+        this.start()
+      }
     })
 
-    const pause = document.getElementById('pause')
-    pause?.addEventListener('click', (evt) => {
+    pause.addEventListener('click', (evt) => {
       const target = evt.target as HTMLTextAreaElement
       if (this.isRunning()) {
         target.textContent = 'Unpause ROM'
