@@ -1,4 +1,4 @@
-# Chip8 Emulator in Typescript
+# 👾 Chip8 Emulator in Typescript
 This is a simple and rudimentary web based Chip8 emulator written in Typescript, for educational porpuoses.
 
 Roms can be loaded or dragged on the web page.
